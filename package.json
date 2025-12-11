@@ -1,0 +1,23 @@
+{
+  "name": "str-form-builder",
+  "version": "0.1.0",
+  "description": "STR Form Editor - Electron Builder",
+  "main": "dist-electron/main.js",
+  "author": {
+    "name": "dogtiti",
+    "email": "dogtiti921@gmail.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac --universal",
+    "build:mac:x64": "electron-builder --mac --x64",
+    "build:mac:arm64": "electron-builder --mac --arm64",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --win --mac --linux"
+  },
+  "devDependencies": {
+    "electron": "^39.2.6",
+    "electron-builder": "^26.0.12"
+  }
+}
