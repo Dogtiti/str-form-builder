@@ -17,10 +17,13 @@ jobs:
         include:
           - os: windows-latest
             platform: win
-            build_cmd: npm run build:win
+            arch: x64
           - os: macos-latest
             platform: mac
-            build_cmd: npm run build:mac
+            arch: x64
+          - os: macos-latest
+            platform: mac
+            arch: arm64
 
     runs-on: ${{ matrix.os }}
 
@@ -33,11 +36,42 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
-      - name: Build Electron app
-        run: ${{ matrix.build_cmd }}
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build Electron app (Windows)
+        if: matrix.platform == 'win'
+        run: pnpm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Electron app (macOS x64)
+        if: matrix.platform == 'mac' && matrix.arch == 'x64'
+        run: pnpm run build:mac:x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Electron app (macOS ARM64)
+        if: matrix.platform == 'mac' && matrix.arch == 'arm64'
+        run: pnpm run build:mac:arm64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -49,17 +83,27 @@ jobs:
           path: |
             release/*.exe
             release/*.zip
-          retention-days: 30
+          retention-days: 7
 
-      - name: Upload artifacts (macOS)
-        if: matrix.platform == 'mac'
+      - name: Upload artifacts (macOS x64)
+        if: matrix.platform == 'mac' && matrix.arch == 'x64'
         uses: actions/upload-artifact@v4
         with:
-          name: macos-universal
+          name: macos-x64
           path: |
             release/*.dmg
             release/*.zip
-          retention-days: 30
+          retention-days: 7
+
+      - name: Upload artifacts (macOS ARM64)
+        if: matrix.platform == 'mac' && matrix.arch == 'arm64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-arm64
+          path: |
+            release/*.dmg
+            release/*.zip
+          retention-days: 7
 
   release:
     needs: build

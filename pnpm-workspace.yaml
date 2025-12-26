@@ -1,0 +1,3 @@
+# str-form-builder 是独立的 submodule
+# 空的 workspace 配置，防止 pnpm 向上查找父目录的 workspace
+packages: []
