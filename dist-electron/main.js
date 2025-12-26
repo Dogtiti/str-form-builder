@@ -11,7 +11,7 @@ function m() {
     minWidth: 1200,
     minHeight: 800,
     webPreferences: {
-      preload: l.join(c, "preload.mjs"),
+      preload: l.join(c, "preload.cjs"),
       contextIsolation: !0,
       nodeIntegration: !1,
       sandbox: !1
