@@ -1,97 +1,73 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
-import * as path from "path";
-import * as fs from "fs";
-import { fileURLToPath } from "url";
-const __filename$1 = fileURLToPath(import.meta.url);
-const __dirname$1 = path.dirname(__filename$1);
-const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
-let mainWindow = null;
-function createWindow() {
-  mainWindow = new BrowserWindow({
+import { app as a, BrowserWindow as f, ipcMain as s, dialog as u } from "electron";
+import * as l from "path";
+import * as h from "fs";
+import { fileURLToPath as p } from "url";
+const w = p(import.meta.url), c = l.dirname(w), d = process.env.VITE_DEV_SERVER_URL;
+let t = null;
+function m() {
+  t = new f({
     width: 1400,
     height: 900,
     minWidth: 1200,
     minHeight: 800,
     webPreferences: {
-      preload: path.join(__dirname$1, "preload.js"),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
+      preload: l.join(c, "preload.mjs"),
+      contextIsolation: !0,
+      nodeIntegration: !1,
+      sandbox: !1
     },
     title: "STR Form Editor"
-  });
-  if (VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(VITE_DEV_SERVER_URL);
-    mainWindow.webContents.openDevTools();
-  } else {
-    mainWindow.loadFile(path.join(__dirname$1, "../dist/index.html"));
-  }
-  mainWindow.on("closed", () => {
-    mainWindow = null;
+  }), d ? (t.loadURL(d), t.webContents.openDevTools()) : t.loadFile(l.join(c, "../dist/index.html")), t.on("closed", () => {
+    t = null;
   });
 }
-app.whenReady().then(() => {
-  createWindow();
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
+a.whenReady().then(() => {
+  m(), a.on("activate", () => {
+    f.getAllWindows().length === 0 && m();
   });
 });
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+a.on("window-all-closed", () => {
+  process.platform !== "darwin" && a.quit();
 });
-ipcMain.handle("dialog:openFile", async (_, filters) => {
-  const { canceled, filePaths } = await dialog.showOpenDialog({
+s.handle("dialog:openFile", async (i, e) => {
+  const { canceled: r, filePaths: n } = await u.showOpenDialog({
     properties: ["openFile"],
-    filters: filters || [
+    filters: e || [
       { name: "All Files", extensions: ["*"] },
       { name: "CSV Files", extensions: ["csv"] },
       { name: "XML Files", extensions: ["xml"] }
     ]
   });
-  if (canceled) {
-    return null;
-  }
-  return filePaths[0];
+  return r ? null : n[0];
 });
-ipcMain.handle("fs:readFile", async (_, filePath, encoding = "utf-8") => {
+s.handle("fs:readFile", async (i, e, r = "utf-8") => {
   try {
-    const content = fs.readFileSync(filePath, encoding);
-    return { success: true, data: content };
-  } catch (error) {
+    return { success: !0, data: h.readFileSync(e, r) };
+  } catch (n) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error"
+      success: !1,
+      error: n instanceof Error ? n.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("dialog:saveFile", async (_, defaultPath, filters) => {
-  const { canceled, filePath } = await dialog.showSaveDialog({
-    defaultPath,
-    filters: filters || [
+s.handle("dialog:saveFile", async (i, e, r) => {
+  const { canceled: n, filePath: o } = await u.showSaveDialog({
+    defaultPath: e,
+    filters: r || [
       { name: "XML Files", extensions: ["xml"] },
       { name: "All Files", extensions: ["*"] }
     ]
   });
-  if (canceled || !filePath) {
-    return null;
-  }
-  return filePath;
+  return n || !o ? null : o;
 });
-ipcMain.handle("fs:writeFile", async (_, filePath, content, encoding = "utf-8") => {
+s.handle("fs:writeFile", async (i, e, r, n = "utf-8") => {
   try {
-    fs.writeFileSync(filePath, content, encoding);
-    return { success: true };
-  } catch (error) {
+    return h.writeFileSync(e, r, n), { success: !0 };
+  } catch (o) {
     return {
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error"
+      success: !1,
+      error: o instanceof Error ? o.message : "Unknown error"
     };
   }
 });
-ipcMain.handle("path:basename", (_, filePath) => {
-  return path.basename(filePath);
-});
+s.handle("path:basename", (i, e) => l.basename(e));
