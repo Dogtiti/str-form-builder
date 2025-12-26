@@ -1,1 +1,10 @@
-"use strict";const i=require("electron"),o={openFileDialog:e=>i.ipcRenderer.invoke("dialog:openFile",e),saveFileDialog:(e,n)=>i.ipcRenderer.invoke("dialog:saveFile",e,n),readFile:(e,n)=>i.ipcRenderer.invoke("fs:readFile",e,n),writeFile:(e,n,r)=>i.ipcRenderer.invoke("fs:writeFile",e,n,r),getBasename:e=>i.ipcRenderer.invoke("path:basename",e)};i.contextBridge.exposeInMainWorld("electron",o);
+"use strict";
+const electron = require("electron");
+const electronAPI = {
+  openFileDialog: (filters) => electron.ipcRenderer.invoke("dialog:openFile", filters),
+  saveFileDialog: (defaultPath, filters) => electron.ipcRenderer.invoke("dialog:saveFile", defaultPath, filters),
+  readFile: (filePath, encoding) => electron.ipcRenderer.invoke("fs:readFile", filePath, encoding),
+  writeFile: (filePath, content, encoding) => electron.ipcRenderer.invoke("fs:writeFile", filePath, content, encoding),
+  getBasename: (filePath) => electron.ipcRenderer.invoke("path:basename", filePath)
+};
+electron.contextBridge.exposeInMainWorld("electron", electronAPI);
